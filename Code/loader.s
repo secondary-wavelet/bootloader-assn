@@ -82,7 +82,7 @@ dap:                ; reads disk sector
     DW 1            ; number of sectors to be read
     DW 0x0000       ; memory buffer: offset address
     DW 0x1000       ; memory buffer: segment address
-    DQ 1
+    DQ 1            ; logical block address (index) of the sector to be read
 
 
 ; padding and adding boot sector signature
