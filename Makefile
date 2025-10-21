@@ -1,10 +1,10 @@
 all: Build/loader.bin Build/kernel.bin Build/disk.img
 
-Build/loader.bin: Code/loader.asm | Build
-	nasm -f bin Code/loader.asm -o Build/loader.bin
+Build/loader.bin: Code/loader.s | Build
+	nasm -f bin Code/loader.s -o Build/loader.bin
 
-Build/kernel.bin: Code/kernel.asm | Build
-	nasm -f bin Code/kernel.asm -o Build/kernel.bin
+Build/kernel.bin: Code/kernel.s | Build
+	nasm -f bin Code/kernel.s -o Build/kernel.bin
 
 Build:
 	mkdir -p Build
