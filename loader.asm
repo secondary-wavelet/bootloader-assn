@@ -1,8 +1,8 @@
 ; load program from disk to 0x7C00, to be read and executed
     ORG 0x7C00
 
+
 setup: ; set up segment registers and stack
-    ; MOV AX, 0x7C00
     XOR AX, AX
     MOV DS, AX
     MOV ES, AX
@@ -12,6 +12,9 @@ setup: ; set up segment registers and stack
     MOV SP, 0xFFFF ; 
 
 main: 
+; saves DX (DL) for future use
+    PUSH DX
+; 10 *s followed by a newline
     MOV AL, 42
     MOV CX, 10
     CALL putnc
@@ -19,9 +22,11 @@ main:
     MOV SI, newline
     CALL puts
 
+; bootloader status
     MOV SI, bootup
     CALL puts
 
+; 10 *s followed by a newline
     MOV AL, 42
     MOV CX, 10
     CALL putnc
@@ -29,8 +34,18 @@ main:
     MOV SI, newline
     CALL puts
 
+;
+    POP DX
+    MOV SI, dap
     MOV AH, 0x42
-    
+    INT 0x13
+    JC read_failed
+
+    JMP 0x1000:0x0000
+
+read_failed:
+    MOV SI, badread
+    CALL puts
 
 ; inf loop to halt the program
     JMP $
@@ -40,8 +55,6 @@ puts: ; prints the length-preceded string starting at [SI]
     XOR CH, CH
     INC SI
 .loop:
-    ; MOV AH, 0x00
-    ; INT 0x16
     LODSB
     MOV AH, 0x0E
     INT 0x10
@@ -52,10 +65,8 @@ puts: ; prints the length-preceded string starting at [SI]
 putnc: ; prints the ascii character [AL] to the screen, [CX] times
     PUSH CX
 .loop:
-    ; PUSH AX
     MOV AH, 0x0E
     INT 0x10
-    ; POP AX
     LOOP .loop
 
     POP CX
@@ -63,7 +74,16 @@ putnc: ; prints the ascii character [AL] to the screen, [CX] times
 
 data:
     bootup DB 32, "The bootloader is starting up!", 0x0D, 0x0A
+    badread DB 19, "Kernel not found!", 0x0D, 0x0A
     newline DB 2, 0x0D, 0x0A
+dap:                ; reads disk sector 
+    DB 0x10         ; size of DAP
+    DB 0            ; reserved
+    DW 1            ; number of sectors to be read
+    DW 0x0000       ; memory buffer: offset address
+    DW 0x1000       ; memory buffer: segment address
+    DQ 1
+
 
 ; padding and adding boot sector signature
     TIMES 510 - ($-$$) DB 0
