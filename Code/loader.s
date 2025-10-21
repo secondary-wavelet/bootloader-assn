@@ -34,7 +34,9 @@ main:
     MOV SI, newline
     CALL puts
 
-;
+; Attempts to load the kernel from the next sector into memory location 0x10000.
+; If it succeeds, jumps to that location and start executing kernel code.
+; If it fails, prints an error string.
     POP DX
     MOV SI, dap
     MOV AH, 0x42
